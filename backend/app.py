@@ -89,6 +89,16 @@ async def save_custom_provider(cfg: ProviderConfig, x_admin_secret: str = Header
         raise HTTPException(502, f"Render API rejected environment update (HTTP {response.status_code}). Check RENDER_API_KEY permissions and service ID.")
     return {"ok":True,"id":"custom:"+pid,"name":cfg.name,"models":cfg.models,"message":"Saved to Render Environment. Service may restart before changes take effect."}
 
+@app.post("/api/test")
+async def test_connection(req: ChatRequest):
+    try:
+        result = await chat(ChatRequest(provider=req.provider, model=req.model, message="Reply with exactly: CONNECTION_OK", history=[]))
+        return {"ok": True, "provider": result.get("provider", req.provider), "model": result.get("model", req.model), "message": "API connection successful.", "sample": str(result.get("answer",""))[:120]}
+    except HTTPException as exc:
+        return __import__("fastapi").responses.JSONResponse(status_code=exc.status_code, content={"ok":False,"message":str(exc.detail)})
+    except Exception as exc:
+        return __import__("fastapi").responses.JSONResponse(status_code=502, content={"ok":False,"message":f"Connection test failed: {type(exc).__name__}"})
+
 @app.post("/api/chat")
 async def chat(req: ChatRequest):
     provider = req.provider
