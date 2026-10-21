@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="G.I KO KO AI ornate gold crest">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff2a8"/><stop offset=".28" stop-color="#f5c64c"/><stop offset=".56" stop-color="#9b5a08"/><stop offset=".78" stop-color="#ffe889"/><stop offset="1" stop-color="#b87513"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<rect width="512" height="512" rx="28" fill="#030609"/>
+<g fill="none" stroke="url(#g)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
+<path d="M256 28l20 38-20 30-20-30z M256 46l-8 18 8 13 8-13z"/>
+<path d="M222 85Q190 49 176 84Q202 84 208 112Q180 91 161 115Q194 119 207 145Q170 130 154 156Q191 153 212 176"/>
+<path d="M290 85Q322 49 336 84Q310 84 304 112Q332 91 351 115Q318 119 305 145Q342 130 358 156Q321 153 300 176"/>
+<path d="M209 112Q153 78 119 124Q143 122 153 146Q119 140 103 166Q141 159 157 182Q122 180 111 207Q153 194 178 219"/>
+<path d="M303 112Q359 78 393 124Q369 122 359 146Q393 140 409 166Q371 159 355 182Q390 180 401 207Q359 194 334 219"/>
+<path d="M177 150Q117 169 110 226Q130 208 146 225Q125 235 130 260Q149 238 168 252Q150 278 172 297"/>
+<path d="M335 150Q395 169 402 226Q382 208 366 225Q387 235 382 260Q363 238 344 252Q362 278 340 297"/>
+<path d="M198 93Q256 63 314 93Q365 122 369 190Q375 256 334 310Q301 352 256 383Q211 352 178 310Q137 256 143 190Q147 122 198 93Z" stroke-width="8"/>
+<path d="M211 108Q256 87 301 108Q344 131 348 190Q352 247 319 291Q291 327 256 350Q221 327 193 291Q160 247 164 190Q168 131 211 108Z" stroke-width="2"/>
+<path d="M256 355l-22 27 22 28 22-28z M256 372l-8 10 8 11 8-11z"/>
+<path d="M110 256l-31-20 31-20 19 20z M402 256l31-20-31-20-19 20z"/>
+<path d="M146 325Q113 345 130 375Q150 357 167 371Q168 395 194 395Q178 372 196 354 M366 325Q399 345 382 375Q362 357 345 371Q344 395 318 395Q334 372 316 354"/>
+<path d="M187 390Q211 411 234 399L256 426 278 399Q301 411 325 390 M208 418l-20 24 28 8 17-23 M304 418l20 24-28 8-17-23"/>
+</g><circle cx="256" cy="238" r="105" fill="#030609" stroke="url(#g)" stroke-width="3"/><text x="256" y="273" text-anchor="middle" font-family="Georgia,serif" font-size="116" font-weight="bold" fill="url(#g)" stroke="#6e430d" stroke-width="1.5" paint-order="stroke">G.I</text><path d="M175 293Q256 326 337 293" fill="none" stroke="url(#g)" stroke-width="3"/><text x="256" y="475" text-anchor="middle" font-family="Georgia,serif" font-size="20" letter-spacing="4" fill="url(#g)">G.I KO KO AI</text></svg>
