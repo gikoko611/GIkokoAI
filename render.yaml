@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: gi-koko-ai-api
+    runtime: python
+    plan: free
+    region: oregon
+    branch: main
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: CORS_ORIGINS
+        value: https://gi-koko-ai.onrender.com
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: MODELGO_API_KEY
+        sync: false
+      - key: MODELGO_BASE_URL
+        value: https://api.modelgo.ai/v1
