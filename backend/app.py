@@ -39,6 +39,25 @@ async def health():
         "openrouter": bool(os.getenv("OPENROUTER_API_KEY")), "custom": len(customs)
     }}
 
+@app.get("/api/free-models")
+async def free_models():
+    # Curated starter catalog. Free eligibility and IDs can change; verify on each provider dashboard.
+    return {"updated":"2026-10-22","note":"Free-tier availability, quota and model IDs can change. This catalog is a guide, not a guarantee. OpenRouter models ending in :free are zero-price routes when available.",
+      "providers":[
+        {"id":"gemini","name":"Google Gemini API","signup":"https://aistudio.google.com/","models":[{"id":"gemini-2.5-flash","note":"Free-tier quota may apply"},{"id":"gemini-2.5-flash-lite","note":"Free-tier quota may apply"},{"id":"gemini-2.5-pro","note":"Availability depends on current project tier"},{"id":"gemma-3-27b-it","note":"Gemma open model; check current free quota"}]},
+        {"id":"groq","name":"GroqCloud","signup":"https://console.groq.com/","models":[{"id":"openai/gpt-oss-120b","note":"Free plan limits apply"},{"id":"openai/gpt-oss-20b","note":"Free plan limits apply"},{"id":"qwen/qwen3-32b","note":"Check current account model availability"}]},
+        {"id":"openrouter","name":"OpenRouter","signup":"https://openrouter.ai/","models":[{"id":"openrouter/free","note":"Free-model router; selects an available free model"},{"id":"google/gemma-3-27b-it:free","note":"If currently listed as available"},{"id":"deepseek/deepseek-r1:free","note":"If currently listed as available"},{"id":"qwen/qwen3-4b:free","note":"If currently listed as available"},{"id":"meta-llama/llama-3.3-70b-instruct:free","note":"If currently listed as available"}]},
+        {"id":"mistral","name":"Mistral AI","signup":"https://console.mistral.ai/","models":[{"id":"open-mistral-nemo","note":"Check free/experiment quota in account"},{"id":"ministral-8b-latest","note":"Check current free tier eligibility"},{"id":"codestral-latest","note":"May require an eligible plan"}]},
+        {"id":"cerebras","name":"Cerebras","signup":"https://cloud.cerebras.ai/","models":[{"id":"llama-3.3-70b","note":"Access depends on current account plan"}]},
+        {"id":"sambanova","name":"SambaNova Cloud","signup":"https://cloud.sambanova.ai/","models":[{"id":"Meta-Llama-3.3-70B-Instruct","note":"Free access/quota depends on account status"}]},
+        {"id":"modelgo","name":"ModelGo","signup":"https://modelgo.ai/","models":[{"id":"openai/gpt-oss-120b","note":"Availability depends on ModelGo account and plan"}]},
+        {"id":"openai","name":"OpenAI","signup":"https://platform.openai.com/","models":[],"note":"No generally available permanent free API model tier; check account credits."},
+        {"id":"anthropic","name":"Anthropic Claude","signup":"https://console.anthropic.com/","models":[],"note":"No generally available permanent free API model tier; check account credits."},
+        {"id":"deepseek","name":"DeepSeek API","signup":"https://platform.deepseek.com/","models":[],"note":"Check current API billing/credit status; do not assume free API access."},
+        {"id":"together","name":"Together AI","signup":"https://api.together.ai/","models":[],"note":"Free access may be trial/credit based; verify current account."},
+        {"id":"fireworks","name":"Fireworks AI","signup":"https://fireworks.ai/","models":[],"note":"Free access may be trial/credit based; verify current account."},
+        {"id":"xai","name":"xAI","signup":"https://console.x.ai/","models":[],"note":"Check current API credits/pricing; do not assume free API access."}
+      ]}
 @app.get("/api/providers")
 async def providers():
     result = []
