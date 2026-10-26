@@ -9,6 +9,7 @@ MODELGO_KEY = os.getenv("MODELGO_API_KEY", "")
 MODELGO_BASE = os.getenv("MODELGO_BASE_URL", "https://api.modelgo.ai/v1").rstrip("/")
 MODEL = os.getenv("NEWS_MODEL", "openai/gpt-oss-120b")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY", "")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
 UPLOAD_POST_KEY = os.getenv("UPLOAD_POST_API_KEY", "")
 AUTO_PUBLISH = os.getenv("AUTO_PUBLISH", "true").lower() == "true"
 UPLOAD_POST_USER = os.getenv("UPLOAD_POST_USER", "default")
@@ -80,10 +81,17 @@ def generate(story):
         }, {"Authorization":"Bearer "+MODELGO_KEY}, timeout=60)
         return data["choices"][0]["message"]["content"].strip()
     if GEMINI_KEY:
-        url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
-        data = request(url, "POST", {"contents":[{"parts":[{"text":prompt}]}], "generationConfig":{"temperature":0.3,"maxOutputTokens":1200}},
-                       {"x-goog-api-key":GEMINI_KEY}, timeout=60)
-        return "".join(p.get("text","") for p in data["candidates"][0]["content"]["parts"]).strip()
+        url = "https://generativelanguage.googleapis.com/v1beta/models/" + urllib.parse.quote(GEMINI_MODEL, safe="-._") + ":generateContent"
+        try:
+            data = request(url, "POST", {"contents":[{"parts":[{"text":prompt}]}], "generationConfig":{"temperature":0.3,"maxOutputTokens":1200}},
+                           {"x-goog-api-key":GEMINI_KEY}, timeout=60)
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", "replace")[:1200]
+            raise RuntimeError(f"Gemini API request failed (HTTP {exc.code}) using model {GEMINI_MODEL}: {detail}") from exc
+        text = "".join(p.get("text","") for p in data.get("candidates", [{}])[0].get("content", {}).get("parts", []))
+        if not text.strip():
+            raise RuntimeError("Gemini returned no text: " + json.dumps(data, ensure_ascii=False)[:1200])
+        return text.strip()
     raise RuntimeError("Set MODELGO_API_KEY or GEMINI_API_KEY in GitHub Actions Secrets.")
 
 
