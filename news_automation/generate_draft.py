@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Create one source-linked Burmese AI news draft as a GitHub Issue for human review."""
-import json, os, sys, hashlib, urllib.parse, urllib.request, urllib.error, xml.etree.ElementTree as ET
+import json, os, sys, hashlib, urllib.parse, urllib.request, urllib.error, xml.etree.ElementTree as ET, time, socket
 from datetime import datetime, timezone
 
 REPO = os.getenv("GITHUB_REPOSITORY", "gikoko611/GIkokoAI")
@@ -82,12 +82,25 @@ def generate(story):
         return data["choices"][0]["message"]["content"].strip()
     if GEMINI_KEY:
         url = "https://generativelanguage.googleapis.com/v1beta/models/" + urllib.parse.quote(GEMINI_MODEL, safe="-._") + ":generateContent"
-        try:
-            data = request(url, "POST", {"contents":[{"parts":[{"text":prompt}]}], "generationConfig":{"temperature":0.3,"maxOutputTokens":1200}},
-                           {"x-goog-api-key":GEMINI_KEY}, timeout=60)
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", "replace")[:1200]
-            raise RuntimeError(f"Gemini API request failed (HTTP {exc.code}) using model {GEMINI_MODEL}: {detail}") from exc
+        data = None
+        for attempt in range(1, 4):
+            try:
+                data = request(url, "POST", {"contents":[{"parts":[{"text":prompt}]}], "generationConfig":{"temperature":0.3,"maxOutputTokens":900}},
+                               {"x-goog-api-key":GEMINI_KEY}, timeout=90)
+                break
+            except urllib.error.HTTPError as exc:
+                detail = exc.read().decode("utf-8", "replace")[:1200]
+                if exc.code not in (408, 429, 500, 502, 503, 504) or attempt == 3:
+                    raise RuntimeError(f"Gemini API request failed (HTTP {exc.code}) using model {GEMINI_MODEL}: {detail}") from exc
+                delay = 2 ** attempt
+                print(f"Gemini temporary HTTP {exc.code}; retry {attempt + 1}/3 in {delay}s")
+                time.sleep(delay)
+            except (TimeoutError, socket.timeout, urllib.error.URLError) as exc:
+                if attempt == 3:
+                    raise RuntimeError(f"Gemini API timed out after {attempt} attempts using model {GEMINI_MODEL}: {type(exc).__name__}: {exc}") from exc
+                delay = 2 ** attempt
+                print(f"Gemini temporary network/timeout error; retry {attempt + 1}/3 in {delay}s: {type(exc).__name__}")
+                time.sleep(delay)
         text = "".join(p.get("text","") for p in data.get("candidates", [{}])[0].get("content", {}).get("parts", []))
         if not text.strip():
             raise RuntimeError("Gemini returned no text: " + json.dumps(data, ensure_ascii=False)[:1200])
