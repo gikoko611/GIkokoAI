@@ -1,0 +1,32 @@
+name: G.I KO KO AI Daily News + Reels Creator Pack
+
+on:
+  schedule:
+    # Daily at 05:30 Asia/Yangon (23:00 UTC on the previous day)
+    - cron: "0 23 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: gi-koko-daily-creator-pack
+  cancel-in-progress: false
+
+jobs:
+  create-daily-pack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Generate Burmese AI news post and Reels production script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MODELGO_API_KEY: ${{ secrets.MODELGO_API_KEY }}
+          MODELGO_BASE_URL: ${{ secrets.MODELGO_BASE_URL }}
+          NEWS_MODEL: ${{ secrets.NEWS_MODEL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-3.8-flash
+        run: python3 news_automation/generate_creator_pack.py
