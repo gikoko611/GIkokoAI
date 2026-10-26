@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Create one source-linked Burmese AI news draft as a GitHub Issue for human review."""
-import json, os, sys, urllib.parse, urllib.request, urllib.error, xml.etree.ElementTree as ET
+import json, os, sys, hashlib, urllib.parse, urllib.request, urllib.error, xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 
 REPO = os.getenv("GITHUB_REPOSITORY", "gikoko611/GIkokoAI")
@@ -9,6 +9,10 @@ MODELGO_KEY = os.getenv("MODELGO_API_KEY", "")
 MODELGO_BASE = os.getenv("MODELGO_BASE_URL", "https://api.modelgo.ai/v1").rstrip("/")
 MODEL = os.getenv("NEWS_MODEL", "openai/gpt-oss-120b")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY", "")
+UPLOAD_POST_KEY = os.getenv("UPLOAD_POST_API_KEY", "")
+AUTO_PUBLISH = os.getenv("AUTO_PUBLISH", "true").lower() == "true"
+UPLOAD_POST_USER = os.getenv("UPLOAD_POST_USER", "default")
+FACEBOOK_PAGE_ID = os.getenv("FACEBOOK_PAGE_ID", "1194405357098288")
 SOURCES = [
     ("OpenAI News", "https://openai.com/news/rss.xml"),
     ("Hugging Face Blog", "https://huggingface.co/blog/feed.xml"),
@@ -82,6 +86,34 @@ def generate(story):
         return "".join(p.get("text","") for p in data["candidates"][0]["content"]["parts"]).strip()
     raise RuntimeError("Set MODELGO_API_KEY or GEMINI_API_KEY in GitHub Actions Secrets.")
 
+
+def publish_facebook(draft, story):
+    if not UPLOAD_POST_KEY:
+        raise RuntimeError("UPLOAD_POST_API_KEY is missing; refusing to report an automatic publish.")
+    source_hash = hashlib.sha256(story["url"].encode()).hexdigest()
+    post_text = draft.strip() + "\\n\\nသတင်းရင်းမြစ်: " + story["url"]
+    fields = {"user": UPLOAD_POST_USER, "platform[]": "facebook", "title": post_text,
+              "facebook_page_id": FACEBOOK_PAGE_ID, "link_url": story["url"]}
+    req = urllib.request.Request(
+        "https://api.upload-post.com/api/upload_text",
+        data=urllib.parse.urlencode(fields).encode(),
+        headers={"Authorization": "Apikey " + UPLOAD_POST_KEY,
+                 "Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json",
+                 "Idempotency-Key": "gikoko-news-" + source_hash, "User-Agent": "GIKOKO-AI-NewsBot/1.0"},
+        method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=60) as response:
+            result = json.loads(response.read())
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", "replace")[:1200]
+        raise RuntimeError(f"Upload-Post publish request failed (HTTP {exc.code}): {detail}") from exc
+    if not result.get("success"):
+        raise RuntimeError("Upload-Post did not confirm success: " + json.dumps(result, ensure_ascii=False)[:1500])
+    platform_result = result.get("results", {}).get("facebook", {})
+    if platform_result.get("success") is False:
+        raise RuntimeError("Facebook publishing failed: " + json.dumps(platform_result, ensure_ascii=False)[:1200])
+    return result
+
 def main():
     if not TOKEN:
         raise RuntimeError("GITHUB_TOKEN is missing.")
@@ -96,20 +128,20 @@ def main():
         print("No new source stories; nothing to draft.")
         return
     draft = generate(story)
-    title = "[NEWS REVIEW] " + story["title"][:180]
+    publish_result = publish_facebook(draft, story) if AUTO_PUBLISH else None
+    if publish_result:
+        print("Upload-Post accepted Facebook publish:", json.dumps(publish_result, ensure_ascii=False)[:1800])
+    title = ("[AUTO-PUBLISHED] " if publish_result else "[NEWS REVIEW] ") + story["title"][:180]
+    status_text = "PUBLISH REQUEST CONFIRMED BY UPLOAD-POST" if publish_result else "WAITING FOR HUMAN REVIEW"
     body = (
-        "## Status: WAITING FOR HUMAN REVIEW\n\n"
-        "Review the source and draft before publishing. This issue does **not** publish automatically.\n\n"
-        "### Source metadata\n"
-        f"- Publisher/feed: {story['source']}\n- Published: {story['date'] or 'Not provided by feed'}\n- Original URL: {story['url']}\n\n"
-        "### AI-generated Burmese draft\n\n" + draft + "\n\n"
-        "### Reviewer checklist\n"
-        "- [ ] Opened and checked the original source\n"
-        "- [ ] Verified names, dates, numbers and claims\n"
-        "- [ ] Edited Burmese wording and headline\n"
-        "- [ ] Checked image/video rights and attribution\n"
-        "- [ ] Approved for Facebook publishing\n\n"
-        "_Generated at " + datetime.now(timezone.utc).isoformat() + ". Approval and publishing are separate steps._"
+        "## Status: " + status_text + "\\n\\n"
+        + ("This post was sent to Upload-Post for Facebook publishing without manual approval.\\n\\n" if publish_result else "Review the source and draft before publishing. This issue does **not** publish automatically.\\n\\n")
+        + "### Source metadata\\n"
+        + f"- Publisher/feed: {story['source']}\\n- Published: {story['date'] or 'Not provided by feed'}\\n- Original URL: {story['url']}\\n\\n"
+        + "### AI-generated Burmese post\\n\\n" + draft + "\\n\\n"
+        + ("### Upload-Post response\\n\`\`\`json\\n" + json.dumps(publish_result, ensure_ascii=False, indent=2)[:4000] + "\\n\`\`\`\\n\\n" if publish_result else
+           "### Reviewer checklist\\n- [ ] Opened and checked the original source\\n- [ ] Verified names, dates, numbers and claims\\n- [ ] Approved for Facebook publishing\\n\\n")
+        + "_Generated at " + datetime.now(timezone.utc).isoformat() + "._"
     )
     result = request(f"https://api.github.com/repos/{REPO}/issues", "POST",
                      {"title": title, "body": body},
