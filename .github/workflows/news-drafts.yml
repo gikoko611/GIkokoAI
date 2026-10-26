@@ -1,0 +1,31 @@
+name: G.I KO KO AI News Drafts
+
+on:
+  schedule:
+    # Asia/Yangon (UTC+6:30): 07:00, 10:00, 13:00, 16:00, 19:00
+    - cron: "30 0,3,6,9,12 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: gi-koko-news-drafts
+  cancel-in-progress: false
+
+jobs:
+  create-review-draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Create one Burmese AI news draft for review
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MODELGO_API_KEY: ${{ secrets.MODELGO_API_KEY }}
+          MODELGO_BASE_URL: ${{ vars.MODELGO_BASE_URL }}
+          NEWS_MODEL: ${{ vars.NEWS_MODEL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python3 news_automation/generate_draft.py
