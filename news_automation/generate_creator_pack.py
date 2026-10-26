@@ -125,7 +125,7 @@ def main():
         "_Automation note: script, storyboard, voice-over and caption are text drafts. This workflow does not render a video or publish a Reel._\n"
     )
     result = request(f"https://api.github.com/repos/{REPO}/issues", "POST",
-        {"title": title, "body": body, "labels": ["ai-news", "reels-script"]},
+        {"title": title, "body": body},
         {"Authorization": "Bearer " + TOKEN, "Accept": "application/vnd.github+json",
          "X-GitHub-Api-Version": "2022-11-28"}, timeout=45)
     print("Daily creator pack issue created:", result.get("html_url", "(URL unavailable)"))
