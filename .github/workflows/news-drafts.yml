@@ -28,6 +28,7 @@ jobs:
           MODELGO_BASE_URL: ${{ vars.MODELGO_BASE_URL }}
           NEWS_MODEL: ${{ vars.NEWS_MODEL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-3.8-flash
           UPLOAD_POST_API_KEY: ${{ secrets.UPLOAD_POST_API_KEY }}
           UPLOAD_POST_USER: default
           FACEBOOK_PAGE_ID: "1194405357098288"
