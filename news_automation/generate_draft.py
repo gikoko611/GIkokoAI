@@ -91,7 +91,7 @@ def publish_facebook(draft, story):
     if not UPLOAD_POST_KEY:
         raise RuntimeError("UPLOAD_POST_API_KEY is missing; refusing to report an automatic publish.")
     source_hash = hashlib.sha256(story["url"].encode()).hexdigest()
-    post_text = draft.strip() + "\\n\\nသတင်းရင်းမြစ်: " + story["url"]
+    post_text = draft.strip() + "\n\nသတင်းရင်းမြစ်: " + story["url"]
     fields = {"user": UPLOAD_POST_USER, "platform[]": "facebook", "title": post_text,
               "facebook_page_id": FACEBOOK_PAGE_ID, "link_url": story["url"]}
     req = urllib.request.Request(
@@ -134,13 +134,13 @@ def main():
     title = ("[AUTO-PUBLISHED] " if publish_result else "[NEWS REVIEW] ") + story["title"][:180]
     status_text = "PUBLISH REQUEST CONFIRMED BY UPLOAD-POST" if publish_result else "WAITING FOR HUMAN REVIEW"
     body = (
-        "## Status: " + status_text + "\\n\\n"
-        + ("This post was sent to Upload-Post for Facebook publishing without manual approval.\\n\\n" if publish_result else "Review the source and draft before publishing. This issue does **not** publish automatically.\\n\\n")
-        + "### Source metadata\\n"
-        + f"- Publisher/feed: {story['source']}\\n- Published: {story['date'] or 'Not provided by feed'}\\n- Original URL: {story['url']}\\n\\n"
-        + "### AI-generated Burmese post\\n\\n" + draft + "\\n\\n"
-        + ("### Upload-Post response\\n\`\`\`json\\n" + json.dumps(publish_result, ensure_ascii=False, indent=2)[:4000] + "\\n\`\`\`\\n\\n" if publish_result else
-           "### Reviewer checklist\\n- [ ] Opened and checked the original source\\n- [ ] Verified names, dates, numbers and claims\\n- [ ] Approved for Facebook publishing\\n\\n")
+        "## Status: " + status_text + "\n\n"
+        + ("This post was sent to Upload-Post for Facebook publishing without manual approval.\n\n" if publish_result else "Review the source and draft before publishing. This issue does **not** publish automatically.\n\n")
+        + "### Source metadata\n"
+        + f"- Publisher/feed: {story['source']}\n- Published: {story['date'] or 'Not provided by feed'}\n- Original URL: {story['url']}\n\n"
+        + "### AI-generated Burmese post\n\n" + draft + "\n\n"
+        + ("### Upload-Post response\n```json\n" + json.dumps(publish_result, ensure_ascii=False, indent=2)[:4000] + "\n```\n\n" if publish_result else
+           "### Reviewer checklist\n- [ ] Opened and checked the original source\n- [ ] Verified names, dates, numbers and claims\n- [ ] Approved for Facebook publishing\n\n")
         + "_Generated at " + datetime.now(timezone.utc).isoformat() + "._"
     )
     result = request(f"https://api.github.com/repos/{REPO}/issues", "POST",
