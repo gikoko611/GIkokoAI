@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "backend/**"
+      - "index.html"
       - "render.yaml"
       - ".github/workflows/automation-ci.yml"
   pull_request:
@@ -39,7 +40,7 @@ jobs:
           python - <<'PY'
           from backend.app import app
           paths = {route.path for route in app.routes}
-          required = {"/api/automation/status", "/api/automation/admin/check"}
+          required = {"/api/automation/status", "/api/automation/admin/check", "/api/automation/ai/status", "/api/automation/ai/plan"}
           missing = required - paths
           if missing:
               raise SystemExit(f"Missing routes: {sorted(missing)}")
