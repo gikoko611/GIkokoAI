@@ -191,3 +191,8 @@ async def chat(req: ChatRequest):
         if isinstance(answer,list): answer="".join(str(x.get("text","")) for x in answer if isinstance(x,dict))
     if not answer: raise HTTPException(502,"Provider returned an empty response.")
     return {"answer":answer,"provider":provider,"model":req.model}
+
+
+# G.I KO KO Automation API (additive; existing AI routes remain unchanged)
+from automation import router as automation_router
+app.include_router(automation_router)
