@@ -194,5 +194,5 @@ async def chat(req: ChatRequest):
 
 
 # G.I KO KO Automation API (additive; existing AI routes remain unchanged)
-from automation import router as automation_router
+from backend.automation import router as automation_router
 app.include_router(automation_router)
